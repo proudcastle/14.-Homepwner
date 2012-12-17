@@ -8,6 +8,7 @@
 
 #import "BNRItemStore.h"
 #import "BNRItem.h"
+#import "BNRImageStore.h"
 
 
 @implementation BNRItemStore
@@ -30,7 +31,12 @@
 {
     self = [super init];
     if(self) {
-        allItems = [[NSMutableArray alloc] init];
+        NSString *path = [self itemArchivePath];
+        allItems = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
+        
+        if (!allItems) {
+            allItems = [[NSMutableArray alloc] init];
+        }
     }
     return self;
 }
@@ -53,6 +59,9 @@
 
 - (void)removeItem:(BNRItem *)p
 {
+    NSString *key = [p imageKey];
+    [[BNRImageStore defaultImageStore] deleteImageForKey:key];
+    
     [allItems removeObjectIdenticalTo:p];
 }
 
@@ -77,9 +86,10 @@
     [allItems insertObject:p atIndex:to];
 }
 
+
 - (BNRItem *)createItem
 {
-    BNRItem *p = [BNRItem randomItem];
+    BNRItem *p = [[BNRItem alloc] init];
 
     [allItems addObject:p];
    
